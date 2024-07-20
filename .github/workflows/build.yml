@@ -31,6 +31,25 @@ jobs:
         uses: ./.github/actions/setup
         with:
           is-asset-build: true
+          
+      - name: Compute short commit SHA
+        id: short-sha
+        with:
+          length: 8
+        uses: benjlevesque/short-sha@v3.0
+
+      - name: Create config.prop
+        env:
+          KEYSTORE_DATA: ${{ secrets.JAVA_KEYSTORE_DATA }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_DATA" | base64 -d > keystore.txt
+          echo "keyStore=keystore.txt" > config.prop
+          echo "keyStorePass=$KEYSTORE_PASSWORD" >> config.prop
+          echo "keyAlias=$KEY_ALIAS" >> config.prop
+          echo "keyPass=$KEY_PASSWORD" >> config.prop
 
       - name: Build release
         run: ./build.py -vr all
@@ -44,14 +63,14 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.sha }}
+          name: magisk-${{ steps.short-sha.outputs.sha }}
           path: out
           compression-level: 9
 
       - name: Upload mapping and native debug symbols
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.sha }}-symbols
+          name: magisk-${{ steps.short-sha.outputs.sha }}-symbols
           path: app/apk/build/outputs
           compression-level: 9
 
@@ -97,10 +116,16 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Compute short commit SHA
+        id: short-sha
+        with:
+          length: 8
+        uses: benjlevesque/short-sha@v3.0
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ github.sha }}
+          name: magisk-${{ steps.short-sha.outputs.sha }}
           path: out
 
       - name: Enable KVM group perms
@@ -138,10 +163,16 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Compute short commit SHA
+        id: short-sha
+        with:
+          length: 8
+        uses: benjlevesque/short-sha@v3.0
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ github.sha }}
+          name: magisk-${{ steps.short-sha.outputs.sha }}
           path: out
 
       - name: Enable KVM group perms
@@ -184,10 +215,16 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Compute short commit SHA
+        id: short-sha
+        with:
+          length: 8
+        uses: benjlevesque/short-sha@v3.0
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ github.sha }}
+          name: magisk-${{ steps.short-sha.outputs.sha }}
           path: out
 
       - name: Setup Cuttlefish environment
